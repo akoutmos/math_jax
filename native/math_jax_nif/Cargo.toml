@@ -1,0 +1,20 @@
+[package]
+name = "math_jax_nif"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "math_jax_nif"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+rustler = "0.37"
+mathjax_svg = "3.2"
+
+# SVG-to-PNG rasterization. We disable default features and avoid the "text"
+# feature because MathJax SVGs use only paths, never <text> elements.
+# This also avoids pulling in fontdb / rustybuzz / harfbuzz.
+resvg = { version = "0.44", default-features = false }
+usvg = { version = "0.44", default-features = false }
+tiny-skia = "0.11"
