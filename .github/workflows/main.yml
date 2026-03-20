@@ -3,12 +3,6 @@ name: MathJax CI
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SHELL: sh
-  RUSTLER_FORCE_BUILD: "true"
-  V8_FROM_SOURCE: "1"
-  PRINT_GN_ARGS: "1"
-  CC: clang
-  CXX: clang++
-  GN_ARGS: "is_component_build=true"
 
 on:
   push:
@@ -21,52 +15,34 @@ jobs:
     name: Static Analysis
     runs-on: ubuntu-latest
 
+    env:
+      MATHJAX_BUILD: "true"
+      RUSTY_V8_ARCHIVE: "https://github.com/${{ github.repository }}/releases/download/v8-139.0.0/librusty_v8_release_x86_64-unknown-linux-gnu.a"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install V8 build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-          clang lld \
-          ninja-build \
-          python3 \
-          pkg-config \
-          libglib2.0-dev \
-          libatk1.0-dev \
-          libatk-bridge2.0-dev \
-          libpango1.0-dev \
-          libdrm-dev \
-          libxkbcommon-dev \
-          libdbus-1-dev \
-          libatspi2.0-dev \
-          libxcomposite-dev \
-          libxdamage-dev \
-          libxrandr-dev \
-          libgbm-dev \
-          libcups2-dev \
-          libnss3-dev \
-          libxss-dev
-      - name: Cache V8 build
-        uses: actions/cache@v4
-        with:
-          path: |
-            native/math_jax_nif/target/release/gn_out
-            native/math_jax_nif/target/release/build/v8-*
-          # v2 suffix forces a fresh build — bump when changing GN_ARGS
-          key: v8-tls-v2-${{ matrix.target || 'x86_64' }}-${{ hashFiles('native/math_jax_nif/Cargo.lock') }}
-      - name: Ensure clean GN state
-        run: |
-          # Force GN to regenerate args.gn with our TLS fix
-          rm -rf native/math_jax_nif/target/release/gn_out/args.gn
-          rm -rf native/math_jax_nif/target/release/gn_out/build.ninja
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
           elixir-version: "1.17.3"
           otp-version: "27.1"
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Get V8 version
+        if: matrix.v8_archive_suffix != ''
+        id: v8-version
+        working-directory: native/math_jax_nif
+        run: |
+          V8_VERSION=$(cargo metadata --format-version 1 | jq -r \
+            '.packages[] | select(.name == "v8") | .version')
+          echo "version=$V8_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download PIC V8 archive
+        if: matrix.v8_archive_suffix != ''
+        run: |
+          mkdir -p v8-prebuilt
+          curl -L -f -o v8-prebuilt/librusty_v8.a \
+            "https://github.com/${{ github.repository }}/releases/download/v8-${{ steps.v8-version.outputs.version }}/librusty_v8_release_${{ matrix.v8_archive_suffix }}.a"
+          ls -lh v8-prebuilt/
       - name: Restore dependencies cache
         uses: actions/cache@v4
         with:
@@ -94,6 +70,10 @@ jobs:
     name: Run ExUnit tests
     runs-on: ubuntu-latest
 
+    env:
+      MATHJAX_BUILD: "true"
+      RUSTY_V8_ARCHIVE: "https://github.com/${{ github.repository }}/releases/download/v8-139.0.0/librusty_v8_release_x86_64-unknown-linux-gnu.a"
+
     strategy:
       matrix:
         elixir: ["1.17"]
@@ -101,18 +81,27 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install V8 build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang libc++-dev libc++abi-dev
+        uses: actions/checkout@v4
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
           elixir-version: ${{ matrix.elixir }}
           otp-version: ${{ matrix.otp }}
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Get V8 version
+        if: matrix.v8_archive_suffix != ''
+        id: v8-version
+        working-directory: native/math_jax_nif
+        run: |
+          V8_VERSION=$(cargo metadata --format-version 1 | jq -r \
+            '.packages[] | select(.name == "v8") | .version')
+          echo "version=$V8_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Download PIC V8 archive
+        if: matrix.v8_archive_suffix != ''
+        run: |
+          mkdir -p v8-prebuilt
+          curl -L -f -o v8-prebuilt/librusty_v8.a \
+            "https://github.com/${{ github.repository }}/releases/download/v8-${{ steps.v8-version.outputs.version }}/librusty_v8_release_${{ matrix.v8_archive_suffix }}.a"
+          ls -lh v8-prebuilt/
       - name: Restore dependencies cache
         uses: actions/cache@v4
         with:
