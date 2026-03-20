@@ -4,6 +4,10 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SHELL: sh
   RUSTLER_FORCE_BUILD: "true"
+  V8_FROM_SOURCE: "1"
+  GN_ARGS: 'is_clang=true use_custom_libcpp=false treat_warnings_as_errors=false v8_enable_sandbox=false extra_cflags=["-fPIC"] extra_cflags_cc=["-fPIC","-ftls-model=global-dynamic"]'
+  CC: clang
+  CXX: clang++
 
 on:
   push:
@@ -18,11 +22,11 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Install V8 build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang libc++-dev libc++abi-dev
+          sudo apt-get install -y clang libc++-dev libc++abi-dev lld ninja-build python3
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
