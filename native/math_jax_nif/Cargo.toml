@@ -8,13 +8,13 @@ name = "math_jax_nif"
 path = "src/lib.rs"
 crate-type = ["cdylib"]
 
+[features]
+nif_version_2_15 = ["rustler/nif_version_2_15"]
+nif_version_2_16 = ["rustler/nif_version_2_16"]
+
 [dependencies]
 rustler = "0.37"
 mathjax_svg = "3.2"
-
-# SVG-to-PNG rasterization. We disable default features and avoid the "text"
-# feature because MathJax SVGs use only paths, never <text> elements.
-# This also avoids pulling in fontdb / rustybuzz / harfbuzz.
 resvg = { version = "0.44", default-features = false }
 usvg = { version = "0.44", default-features = false }
 tiny-skia = "0.11"
