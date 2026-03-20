@@ -15,47 +15,18 @@ jobs:
         nif: ["2.16", "2.15"]
         job:
           - {
-              target: arm-unknown-linux-gnueabihf,
-              os: ubuntu-22.04,
-              use-cross: true,
-              rusty_v8_archive: "https://github.com/akoutmos/math_jax/releases/download/v8-139.0.0/librusty_v8_release_aarch64-unknown-linux-gnu.a",
-            }
-          - {
               target: aarch64-unknown-linux-gnu,
               os: ubuntu-22.04,
               use-cross: true,
               rusty_v8_archive: "https://github.com/akoutmos/math_jax/releases/download/v8-139.0.0/librusty_v8_release_aarch64-unknown-linux-gnu.a",
             }
           - {
-              target: aarch64-unknown-linux-musl,
-              os: ubuntu-22.04,
-              use-cross: true,
-              rusty_v8_archive: "https://github.com/akoutmos/math_jax/releases/download/v8-139.0.0/librusty_v8_release_aarch64-unknown-linux-gnu.a",
-            }
-          - { target: aarch64-apple-darwin, os: macos-15, rusty_v8_archive: "" }
-          - {
-              target: riscv64gc-unknown-linux-gnu,
-              os: ubuntu-22.04,
-              use-cross: true,
-              rusty_v8_archive: "https://github.com/akoutmos/math_jax/releases/download/v8-139.0.0/librusty_v8_release_aarch64-unknown-linux-gnu.a",
-            }
-          - { target: x86_64-apple-darwin, os: macos-15, rusty_v8_archive: "" }
-          - {
               target: x86_64-unknown-linux-gnu,
               os: ubuntu-22.04,
               rusty_v8_archive: "https://github.com/akoutmos/math_jax/releases/download/v8-139.0.0/librusty_v8_release_x86_64-unknown-linux-gnu.a",
             }
-          - {
-              target: x86_64-unknown-linux-musl,
-              os: ubuntu-22.04,
-              use-cross: true,
-              rusty_v8_archive: "https://github.com/akoutmos/math_jax/releases/download/v8-139.0.0/librusty_v8_release_x86_64-unknown-linux-gnu.a",
-            }
-          - {
-              target: x86_64-pc-windows-gnu,
-              os: windows-2025,
-              rusty_v8_archive: "",
-            }
+          - { target: aarch64-apple-darwin, os: macos-15, rusty_v8_archive: "" }
+          - { target: x86_64-apple-darwin, os: macos-15, rusty_v8_archive: "" }
           - {
               target: x86_64-pc-windows-msvc,
               os: windows-2025,
