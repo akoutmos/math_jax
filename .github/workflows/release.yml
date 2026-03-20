@@ -45,10 +45,13 @@ jobs:
         env:
           RUSTY_V8_ARCHIVE: ${{ github.workspace }}/v8-prebuilt/librusty_v8.a
 
+      - name: Find built artifacts
+        run: find _build -name "math_jax_nif-*" -type f 2>/dev/null || find . -name "math_jax_nif-*.tar.gz" -type f
+
       - uses: actions/upload-artifact@v4
         with:
           name: nif-${{ matrix.job.target }}-nif${{ matrix.nif }}
-          path: _build/prod/lib/math_jax/priv/native/*
+          path: _build/**/math_jax_nif-*.tar.gz
           if-no-files-found: error
 
   build_nif_other:
