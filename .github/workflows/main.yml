@@ -26,7 +26,26 @@ jobs:
       - name: Install V8 build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang libc++-dev libc++abi-dev lld ninja-build python3
+          sudo apt-get install -y \
+            clang lld \
+            ninja-build \
+            python3 \
+            pkg-config \
+            libglib2.0-dev \
+            libatk1.0-dev \
+            libatk-bridge2.0-dev \
+            libpango1.0-dev \
+            libdrm-dev \
+            libxkbcommon-dev \
+            libdbus-1-dev \
+            libatspi2.0-dev \
+            libxcomposite-dev \
+            libxdamage-dev \
+            libxrandr-dev \
+            libgbm-dev \
+            libcups2-dev \
+            libnss3-dev \
+            libxss-dev
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
