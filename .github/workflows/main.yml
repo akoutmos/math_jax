@@ -3,6 +3,7 @@ name: MathJax CI
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SHELL: sh
+  MATHJAX_BUILD: "true"
 
 on:
   push:
@@ -16,7 +17,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      MATHJAX_BUILD: "true"
       RUSTY_V8_ARCHIVE: "https://github.com/${{ github.repository }}/releases/download/v8-139.0.0/librusty_v8_release_x86_64-unknown-linux-gnu.a"
 
     steps:
@@ -27,22 +27,6 @@ jobs:
         with:
           elixir-version: "1.17.3"
           otp-version: "27.1"
-      - name: Get V8 version
-        if: matrix.v8_archive_suffix != ''
-        id: v8-version
-        working-directory: native/math_jax_nif
-        run: |
-          V8_VERSION=$(cargo metadata --format-version 1 | jq -r \
-            '.packages[] | select(.name == "v8") | .version')
-          echo "version=$V8_VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Download PIC V8 archive
-        if: matrix.v8_archive_suffix != ''
-        run: |
-          mkdir -p v8-prebuilt
-          curl -L -f -o v8-prebuilt/librusty_v8.a \
-            "https://github.com/${{ github.repository }}/releases/download/v8-${{ steps.v8-version.outputs.version }}/librusty_v8_release_${{ matrix.v8_archive_suffix }}.a"
-          ls -lh v8-prebuilt/
       - name: Restore dependencies cache
         uses: actions/cache@v4
         with:
@@ -71,7 +55,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      MATHJAX_BUILD: "true"
       RUSTY_V8_ARCHIVE: "https://github.com/${{ github.repository }}/releases/download/v8-139.0.0/librusty_v8_release_x86_64-unknown-linux-gnu.a"
 
     strategy:
@@ -87,21 +70,6 @@ jobs:
         with:
           elixir-version: ${{ matrix.elixir }}
           otp-version: ${{ matrix.otp }}
-      - name: Get V8 version
-        if: matrix.v8_archive_suffix != ''
-        id: v8-version
-        working-directory: native/math_jax_nif
-        run: |
-          V8_VERSION=$(cargo metadata --format-version 1 | jq -r \
-            '.packages[] | select(.name == "v8") | .version')
-          echo "version=$V8_VERSION" >> "$GITHUB_OUTPUT"
-      - name: Download PIC V8 archive
-        if: matrix.v8_archive_suffix != ''
-        run: |
-          mkdir -p v8-prebuilt
-          curl -L -f -o v8-prebuilt/librusty_v8.a \
-            "https://github.com/${{ github.repository }}/releases/download/v8-${{ steps.v8-version.outputs.version }}/librusty_v8_release_${{ matrix.v8_archive_suffix }}.a"
-          ls -lh v8-prebuilt/
       - name: Restore dependencies cache
         uses: actions/cache@v4
         with:
