@@ -61,7 +61,7 @@ jobs:
           project-version: ${{ env.PROJECT_VERSION }}
           target: ${{ matrix.job.target }}
           nif-version: ${{ matrix.nif }}
-          use-cross: ${{ matrix.job.use-cross }}
+          use-cross: false
           project-dir: "native/math_jax_nif"
 
       - name: Artifact upload
