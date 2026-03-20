@@ -31,8 +31,7 @@
 
 - [Installation](#installation)
 - [Example Output](#example-output)
-- [Mix Formatter](#mix-formatter)
-- [Supporting SqlFmt](#supporting-sqlfmt)
+- [Supporting MathJax](#supporting-sqlfmt)
 - [Attribution](#attribution)
 
 ## Installation
@@ -43,7 +42,7 @@ dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:math_jax, "~> 0.5.0"}
+    {:math_jax, "~> 0.1.0"}
   ]
 end
 ```
@@ -52,61 +51,60 @@ Documentation can be found at [https://hexdocs.pm/math_jax](https://hexdocs.pm/m
 
 ## Example Output
 
-After setting up SqlFmt in your application you can use the SqlFmt functions in order to format queries. Here are a
-couple examples of queries with having parameters inline and with passing in the parameters separately:
+After setting up MathJax in your application you can use the MathJax functions in order to generate images of
+mathematical expressions:
+
+### Example 1
 
 ```elixir
-iex(1)> {:ok, formatted_sql} = SqlFmt.format_query("select * from businesses where id in ('c6f5c5f1-a1fc-4c9a-91f7-6aa40f1e233d', 'f339d4ce-96b6-4440-a541-28a0fb611139');")
-{:ok, "SELECT\n  *\nFROM\n  businesses\nWHERE\n  id IN (\n    'c6f5c5f1-a1fc-4c9a-91f7-6aa40f1e233d',\n    'f339d4ce-96b6-4440-a541-28a0fb611139'\n  );"}
-
-iex(2)> IO.puts(formatted_sql)
-SELECT
-  *
-FROM
-  businesses
-WHERE
-  id IN (
-    'c6f5c5f1-a1fc-4c9a-91f7-6aa40f1e233d',
-    'f339d4ce-96b6-4440-a541-28a0fb611139'
-  );
-:ok
+MathJax.render!(~S"y = mx + b", :png)
 ```
+
+<p align="center">
+  <img align="center" src="guides/images/equation_1.png" alt="Equation 1">
+</p>
+
+### Example 2
 
 ```elixir
-iex(1)> {:ok, formatted_sql} = SqlFmt.format_query_with_params("select * from help where help.\"col\" in $1;", ["'asdf'"])
-{:ok, "SELECT\n  *\nFROM\n  help\nWHERE\n  help.\"col\" IN 'asdf';"}
-
-iex(2)> IO.puts(formatted_sql)
-SELECT
-  *
-FROM
-  help
-WHERE
-  help."col" IN 'asdf';
-:ok
+MathJax.render!(~S"x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}", :png)
 ```
 
-Be sure to checkout the HexDocs as you can also provide formatting options to the functions to tailor the output to your
-liking.
+<p align="center">
+  <img align="center" src="guides/images/equation_2.png" alt="Equation 2">
+</p>
 
-## Mix Formatter
-
-SqlFmt also provides you with the `~SQL` sigil that can be used to format SQL via Mix Formatter plugin. To set up the
-Mix Formatter plugin, simply install this package and add update your `.formatter.exs` file as follows:
+### Example 3
 
 ```elixir
-[
-  plugins: [SqlFmt.MixFormatter],
-  inputs: ["**/*.sql"],
-  # ...
-]
+MathJax.render!(~S"\frac{d}{dx}\left[\frac{x^2 \sin(x)}{e^x}\right] = \frac{e^x(2x\sin(x) + x^2\cos(x)) - x^2\sin(x)\,e^x}{e^{2x}}", :png)
 ```
 
-With this configuration, the SqlFmt Mix Format plugin will now format all `~SQL` sigils and all files ending in `.sql`.
-This can be particularly useful in Ecto migrations where you have large `execute` statements and you want to make sure
-that your code is readable. Check out the `SqlFmt.MixFormatter` module docs for more information.
+<p align="center">
+  <img align="center" src="guides/images/equation_3.png" alt="Equation 3">
+</p>
 
-## Supporting SqlFmt
+### Example 4
+
+```elixir
+MathJax.render!(~S"\int_{0}^{\infty} \frac{\sqrt[3]{x}}{(1+x)^2} \, dx = \frac{2\pi}{3\sqrt{3}}", :png)
+```
+
+<p align="center">
+  <img align="center" src="guides/images/equation_4.png" alt="Equation 4">
+</p>
+
+### Example 5
+
+```elixir
+MathJax.render!(~S"\nabla f(\mathbf{x}) = \sum_{k=1}^{n} \frac{\partial}{\partial x_k} \left[ \int_{0}^{x_k} e^{-t^2} \, dt \right] \hat{e}_k = \begin{pmatrix} e^{-x_1^2} \\ e^{-x_2^2} \\ \vdots \\ e^{-x_n^2} \end{pmatrix}", :png)
+```
+
+<p align="center">
+  <img align="center" src="guides/images/equation_5.png" alt="Equation 5">
+</p>
+
+## Supporting MathJax
 
 If you rely on this library help you debug your Ecto/SQL queries, it would much appreciated if you can give back
 to the project in order to help ensure its continued development.
@@ -133,6 +131,4 @@ Checkout my [GitHub Sponsorship page](https://github.com/sponsors/akoutmos) if y
 
 ## Attribution
 
-- The logo for the project is an edited version of an SVG image from the [unDraw project](https://undraw.co/).
-- The SqlFmt library leans on the Rust library [sqlformat-rs](https://github.com/shssoichiro/sqlformat-rs) for SQL
-  statement formatting.
+- The MathJax library leans on the Rust library [mathjax_svg](https://github.com/gw31415/mathjax_svg) for compiling MathJax expressions.

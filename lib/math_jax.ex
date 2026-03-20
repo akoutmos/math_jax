@@ -21,7 +21,7 @@ defmodule MathJax do
   end
 
   def render(expression, :png) do
-    render(expression, {:png, 2.0})
+    render(expression, {:png, 3.0})
   end
 
   def render(expression, {:png, scale}) do

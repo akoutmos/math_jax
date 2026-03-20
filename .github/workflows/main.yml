@@ -8,7 +8,7 @@ env:
   PRINT_GN_ARGS: "1"
   CC: clang
   CXX: clang++
-  GN_ARGS: 'extra_cflags_cc=["-fPIC","-ftls-model=global-dynamic"]'
+  GN_ARGS: "is_component_build=true"
 
 on:
   push:
@@ -51,15 +51,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            native/mathjax_nif/target/release/gn_out
-            native/mathjax_nif/target/release/build/v8-*
+            native/math_jax_nif/target/release/gn_out
+            native/math_jax_nif/target/release/build/v8-*
           # v2 suffix forces a fresh build — bump when changing GN_ARGS
-          key: v8-tls-v2-${{ matrix.target || 'x86_64' }}-${{ hashFiles('native/mathjax_nif/Cargo.lock') }}
+          key: v8-tls-v2-${{ matrix.target || 'x86_64' }}-${{ hashFiles('native/math_jax_nif/Cargo.lock') }}
       - name: Ensure clean GN state
         run: |
           # Force GN to regenerate args.gn with our TLS fix
-          rm -rf native/mathjax_nif/target/release/gn_out/args.gn
-          rm -rf native/mathjax_nif/target/release/gn_out/build.ninja
+          rm -rf native/math_jax_nif/target/release/gn_out/args.gn
+          rm -rf native/math_jax_nif/target/release/gn_out/build.ninja
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
