@@ -3,7 +3,7 @@ name: MathJax CI
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SHELL: sh
-  MATHJAX_BUILD: "true"
+  RUSTLER_FORCE_BUILD: "true"
 
 on:
   push:
