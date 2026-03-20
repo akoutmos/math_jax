@@ -46,6 +46,14 @@ jobs:
           libcups2-dev \
           libnss3-dev \
           libxss-dev
+      - name: Cache V8 build
+        uses: actions/cache@v4
+        with:
+          path: |
+            native/math_jax_nif/target/release/gn_out
+            native/math_jax_nif/target/release/build/v8-*
+          key: v8-ci-${{ hashFiles('native/math_jax_nif/Cargo.lock') }}
+          restore-keys: v8-ci-
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
