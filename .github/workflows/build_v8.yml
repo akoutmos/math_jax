@@ -21,7 +21,7 @@ jobs:
 
       - name: Get V8 version from Cargo.lock
         id: v8-version
-        working-directory: native/mathjax_nif
+        working-directory: native/math_jax_nif
         run: |
           V8_VERSION=$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "v8") | .version')
           echo "version=$V8_VERSION" >> "$GITHUB_OUTPUT"
@@ -47,7 +47,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/io" \
             -v "${{ github.workspace }}/v8-out:/v8-out" \
-            -w /io/native/mathjax_nif \
+            -w /io/native/math_jax_nif \
             -e V8_FROM_SOURCE=1 \
             -e "GN_ARGS=v8_monolithic=true v8_monolithic_for_shared_library=true is_component_build=false treat_warnings_as_errors=false symbol_level=0" \
             quay.io/pypa/manylinux_2_28_x86_64 \
@@ -57,7 +57,7 @@ jobs:
               curl --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
               source "$HOME/.cargo/env"
               cargo build --release
-              cp /io/native/mathjax_nif/target/release/gn_out/obj/librusty_v8.a \
+              cp /io/native/math_jax_nif/target/release/gn_out/obj/librusty_v8.a \
                 /v8-out/librusty_v8_release_x86_64-unknown-linux-gnu.a
               ls -lh /v8-out/
             '
@@ -95,7 +95,7 @@ jobs:
 
       - name: Get V8 version from Cargo.lock
         id: v8-version
-        working-directory: native/mathjax_nif
+        working-directory: native/math_jax_nif
         run: |
           V8_VERSION=$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "v8") | .version')
           echo "version=$V8_VERSION" >> "$GITHUB_OUTPUT"
@@ -121,7 +121,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/io" \
             -v "${{ github.workspace }}/v8-out:/v8-out" \
-            -w /io/native/mathjax_nif \
+            -w /io/native/math_jax_nif \
             -e V8_FROM_SOURCE=1 \
             -e CLANG_BASE_PATH=/usr \
             -e "GN_ARGS=v8_monolithic=true v8_monolithic_for_shared_library=true is_component_build=false treat_warnings_as_errors=false symbol_level=0" \
@@ -143,7 +143,7 @@ jobs:
               curl --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
               source "$HOME/.cargo/env"
               cargo build --release
-              cp /io/native/mathjax_nif/target/release/gn_out/obj/librusty_v8.a \
+              cp /io/native/math_jax_nif/target/release/gn_out/obj/librusty_v8.a \
                 /v8-out/librusty_v8_release_aarch64-unknown-linux-gnu.a
               ls -lh /v8-out/
             '
