@@ -9,6 +9,8 @@ jobs:
   build_release:
     name: NIF ${{ matrix.nif }} - ${{ matrix.job.target }} (${{ matrix.job.os }})
     runs-on: ${{ matrix.job.os }}
+    env:
+      RUSTY_V8_ARCHIVE: ${{ matrix.rusty_v8_archive }}
     strategy:
       fail-fast: false
       matrix:
@@ -54,7 +56,6 @@ jobs:
         uses: philss/rustler-precompiled-action@v1.0.1
         env:
           RUSTLER_NIF_VERSION: ${{ matrix.nif_version }}
-          RUSTY_V8_ARCHIVE: ${{ matrix.rusty_v8_archive }}
         with:
           project-name: math_jax_nif
           project-version: ${{ env.PROJECT_VERSION }}
