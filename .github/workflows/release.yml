@@ -102,6 +102,7 @@ jobs:
       - name: Build NIF
         env:
           RUSTLER_NIF_VERSION: ${{ matrix.nif }}
+          RUSTLER_FORCE_BUILD: "true"
         run: |
           mix rustler_precompiled.build MathJax.Native --target ${{ matrix.job.target }} --nif-version ${{ matrix.nif }}
 
