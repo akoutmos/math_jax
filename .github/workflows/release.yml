@@ -46,6 +46,10 @@ jobs:
           curl -L -f -o v8-prebuilt/librusty_v8.a "${{ matrix.job.v8_archive_url }}"
           ls -lh v8-prebuilt/
 
+      - name: Clean stale V8 cache
+        working-directory: native/math_jax_nif
+        run: cargo clean -p v8
+
       - name: Build NIF
         working-directory: native/math_jax_nif
         run: cargo build --release --features nif_version_${{ matrix.nif.feature }}
@@ -70,11 +74,11 @@ jobs:
           tar -czf "artifacts/${ARTIFACT_NAME}.tar.gz" -C "${LIB_DIR}" "libmath_jax_nif.so"
           ls -lh artifacts/
 
-      - name: Artifact upload
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.build-crate.outputs.file-name }}
-          path: ${{ steps.build-crate.outputs.file-path }}
+          name: nif-${{ matrix.job.target }}-nif${{ matrix.nif.version }}
+          path: artifacts/*.tar.gz
+          if-no-files-found: error
 
   build_nif_other:
     name: NIF ${{ matrix.nif }} - ${{ matrix.job.target }} (${{ matrix.job.os }})
