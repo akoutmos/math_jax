@@ -97,9 +97,8 @@ jobs:
         shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          NIF_VERSION="${{ matrix.nif.version }}"
           TARGET="${{ matrix.job.target }}"
-          ARTIFACT_NAME="math_jax_nif-v${VERSION}-nif-${NIF_VERSION}-${TARGET}"
+          ARTIFACT_NAME="math_jax_nif-v${VERSION}-nif-${{ matrix.nif.version }}-${TARGET}"
 
           LIB_FILE=$(find native/math_jax_nif/target/release -maxdepth 1 -name "${{ matrix.job.lib_name }}" -type f | head -1)
           echo "Found: $LIB_FILE"
