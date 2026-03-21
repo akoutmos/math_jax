@@ -82,7 +82,14 @@ jobs:
           - os: windows-2025
             target: x86_64-pc-windows-msvc
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          target: ${{ matrix.job.target }}
 
       - name: Build NIF
         uses: philss/rustler-precompiled-action@v1.0.1
