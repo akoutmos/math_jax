@@ -84,17 +84,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Elixir
-        uses: erlef/setup-beam@v1
-        with:
-          otp-version: "27"
-          elixir-version: "1.17"
-
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build NIF
-        working-directory: native/mathjax_nif
+        working-directory: native/math_jax_nif
         run: cargo build --release --features nif_version_${{ matrix.nif }}
 
       - name: Package artifact
@@ -103,9 +97,9 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           NIF_VERSION="${{ matrix.nif }}"
           TARGET="${{ matrix.job.target }}"
-          ARTIFACT_NAME="mathjax_nif-v${VERSION}-nif-${NIF_VERSION}-${TARGET}"
+          ARTIFACT_NAME="math_jax_nif-v${VERSION}-nif-${NIF_VERSION}-${TARGET}"
 
-          LIB_FILE=$(find native/mathjax_nif/target/release -maxdepth 1 -name "${{ matrix.job.lib_name }}" -type f | head -1)
+          LIB_FILE=$(find native/math_jax_nif/target/release -maxdepth 1 -name "${{ matrix.job.lib_name }}" -type f | head -1)
           echo "Found: $LIB_FILE"
 
           mkdir -p artifacts
