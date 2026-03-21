@@ -86,7 +86,7 @@ defmodule MathJax.MixProject do
     [
       name: "math_jax",
       files:
-        ~w(lib mix.exs README.md LICENSE CHANGELOG.md native/sql_fmt_nif/.cargo native/sql_fmt_nif/src native/sql_fmt_nif/Cargo.* VERSION checksum-*.exs),
+        ~w(lib mix.exs README.md LICENSE CHANGELOG.md native/math_jax_nif/.cargo native/math_jax_nif/src native/math_jax_nif/Cargo.* VERSION checksum-*.exs),
       licenses: ["MIT"],
       maintainers: ["Alex Koutmos"],
       links: %{
