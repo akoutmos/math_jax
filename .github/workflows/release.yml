@@ -55,19 +55,24 @@ jobs:
       - name: Package artifact
         run: |
           TARGET="${{ matrix.job.target }}"
-
           LIB_FILE=$(find native/math_jax_nif/target -maxdepth 3 -name "*.so" -type f | head -1)
 
-          # Rename to what rustler_precompiled expects
-          LIB_DIR=$(dirname "$LIB_FILE")
-          if [ ! -f "${LIB_DIR}/libmath_jax_nif.so" ]; then
-            cp "$LIB_FILE" "${LIB_DIR}/libmath_jax_nif.so"
+          if [ -z "$LIB_FILE" ]; then
+            echo "ERROR: No shared library found"
+            find native/math_jax_nif/target/release -type f | head -20
+            exit 1
           fi
 
-          ARTIFACT_NAME="libmath_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}.so"
+          echo "Found: $LIB_FILE"
+          INNER_NAME="libmath_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}.so"
+
+          LIB_DIR=$(dirname "$LIB_FILE")
+          if [ ! -f "${LIB_DIR}/${INNER_NAME}" ]; then
+            cp "$LIB_FILE" "${LIB_DIR}/${INNER_NAME}"
+          fi
 
           mkdir -p artifacts
-          tar -czf "artifacts/${ARTIFACT_NAME}.tar.gz" -C "${LIB_DIR}" "libmath_jax_nif.so"
+          tar -czf "artifacts/${INNER_NAME}.tar.gz" -C "${LIB_DIR}" "${INNER_NAME}"
           ls -lh artifacts/
 
       - uses: actions/upload-artifact@v4
