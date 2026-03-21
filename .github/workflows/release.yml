@@ -124,32 +124,36 @@ jobs:
           TARGET="${{ matrix.job.target }}"
 
           if [[ "$TARGET" == *"windows"* ]]; then
-            LIB_FILE=$(find native/math_jax_nif/target -maxdepth 3 -name "*.dll" -type f | head -1)
+            LIB_FILE="native/math_jax_nif/target/release/math_jax_nif.dll"
             EXT="dll"
             PREFIX=""
           else
-            LIB_FILE=$(find native/math_jax_nif/target -maxdepth 3 \( -name "*.dylib" -o -name "*.so" \) -type f | head -1)
+            # Check for .dylib first (macOS), fall back to .so (Linux)
+            LIB_FILE="native/math_jax_nif/target/release/libmath_jax_nif.dylib"
+            if [ ! -f "$LIB_FILE" ]; then
+              LIB_FILE="native/math_jax_nif/target/release/libmath_jax_nif.so"
+            fi
             EXT="so"
             PREFIX="lib"
           fi
 
-          if [ -z "$LIB_FILE" ]; then
-            echo "ERROR: No shared library found"
-            find native/math_jax_nif/target/release -type f | head -20
+          if [ ! -f "$LIB_FILE" ]; then
+            echo "ERROR: NIF not found at expected path"
+            ls -la native/math_jax_nif/target/release/libmath_jax_nif* 2>/dev/null || true
+            ls -la native/math_jax_nif/target/release/math_jax_nif* 2>/dev/null || true
             exit 1
           fi
 
           echo "Found: $LIB_FILE"
           INNER_NAME="${PREFIX}math_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}.${EXT}"
-          ARTIFACT_NAME="${INNER_NAME}"
+          mkdir -p artifacts
 
-          LIB_DIR=$(dirname "$LIB_FILE")
           if [ ! -f "${LIB_DIR}/${INNER_NAME}" ]; then
-            cp "$LIB_FILE" "${LIB_DIR}/${INNER_NAME}"
+            cp "$LIB_FILE" "artifacts/${INNER_NAME}"
           fi
 
-          mkdir -p artifacts
-          tar -czf "artifacts/${ARTIFACT_NAME}.tar.gz" -C "${LIB_DIR}" "${INNER_NAME}"
+          tar -czf "artifacts/${INNER_NAME}.tar.gz" -C artifacts "${INNER_NAME}"
+          rm "artifacts/${INNER_NAME}"
           ls -lh artifacts/
 
       - uses: actions/upload-artifact@v4
