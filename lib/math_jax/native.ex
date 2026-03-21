@@ -8,7 +8,15 @@ defmodule MathJax.Native do
     crate: :math_jax_nif,
     base_url: "https://github.com/akoutmos/math_jax/releases/download/v#{version}",
     force_build: System.get_env("RUSTLER_FORCE_BUILD") in ["1", "true"],
-    targets: Enum.uniq(["aarch64-unknown-linux-musl" | RustlerPrecompiled.Config.default_targets()]),
+    targets:
+      Enum.uniq([
+        "aarch64-apple-darwin",
+        "x86_64-apple-darwin",
+        "x86_64-unknown-linux-gnu",
+        "aarch64-unknown-linux-gnu",
+        "x86_64-pc-windows-gnu",
+        "x86_64-pc-windows-msvc"
+      ]),
     version: version
 
   @doc false

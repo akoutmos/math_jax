@@ -20,11 +20,9 @@ jobs:
         job:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            use-cross: false
             v8_archive_url: "https://github.com/akoutmos/math_jax/releases/download/v8-139.0.0/librusty_v8_release_x86_64-unknown-linux-gnu.a"
           - os: ubuntu-22.04
             target: aarch64-unknown-linux-gnu
-            use-cross: true
             v8_archive_url: "https://github.com/akoutmos/math_jax/releases/download/v8-139.0.0/librusty_v8_release_aarch64-unknown-linux-gnu.a"
     steps:
       - name: Checkout source code
@@ -49,13 +47,25 @@ jobs:
           project-version: ${{ env.PROJECT_VERSION }}
           project-dir: native/math_jax_nif
           target: ${{ matrix.job.target }}
-          use-cross: ${{ matrix.job.use-cross }}
           nif-version: ${{ matrix.nif }}
         env:
           RUSTY_V8_ARCHIVE: ${{ github.workspace }}/v8-prebuilt/librusty_v8.a
 
-      - name: Find built artifacts
-        run: find _build -name "math_jax_nif-*" -type f 2>/dev/null || find . -name "math_jax_nif-*.tar.gz" -type f
+      - name: Package artifact
+        run: |
+          TARGET="${{ matrix.job.target }}"
+
+          LIB_FILE=$(find native/math_jax_nif/target -maxdepth 3 -name "*.so" -type f | head -1)
+
+          # Rename to what rustler_precompiled expects
+          LIB_DIR=$(dirname "$LIB_FILE")
+          cp "$LIB_FILE" "${LIB_DIR}/libmath_jax_nif.so"
+
+          ARTIFACT_NAME="libmath_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}.so"
+
+          mkdir -p artifacts
+          tar -czf "artifacts/${ARTIFACT_NAME}.tar.gz" -C "${LIB_DIR}" "libmath_jax_nif.so"
+          ls -lh artifacts/
 
       - name: Artifact upload
         uses: actions/upload-artifact@v4
@@ -102,12 +112,17 @@ jobs:
         shell: bash
         run: |
           TARGET="${{ matrix.job.target }}"
-          ARTIFACT_NAME="math_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}"
 
-          echo "Searching for built library..."
-          find native/math_jax_nif/target -maxdepth 3 \( -name "*.so" -o -name "*.dylib" -o -name "*.dll" \) -type f 2>/dev/null
-
-          LIB_FILE=$(find native/math_jax_nif/target -maxdepth 3 \( -name "*.so" -o -name "*.dylib" -o -name "*.dll" \) -type f | head -1)
+          if [[ "$TARGET" == *"windows"* ]]; then
+            LIB_FILE=$(find native/math_jax_nif/target -maxdepth 3 -name "*.dll" -type f | head -1)
+            INNER_NAME="math_jax_nif.dll"
+            EXT="dll"
+          else
+            # macOS: cargo produces .dylib but rustler expects .so
+            LIB_FILE=$(find native/math_jax_nif/target -maxdepth 3 \( -name "*.dylib" -o -name "*.so" \) -type f | head -1)
+            INNER_NAME="libmath_jax_nif.so"
+            EXT="so"
+          fi
 
           if [ -z "$LIB_FILE" ]; then
             echo "ERROR: No shared library found"
@@ -116,8 +131,13 @@ jobs:
           fi
 
           echo "Found: $LIB_FILE"
+          LIB_DIR=$(dirname "$LIB_FILE")
+          cp "$LIB_FILE" "${LIB_DIR}/${INNER_NAME}"
+
+          ARTIFACT_NAME="libmath_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}.${EXT}"
+
           mkdir -p artifacts
-          tar -czf "artifacts/${ARTIFACT_NAME}.tar.gz" -C "$(dirname "$LIB_FILE")" "$(basename "$LIB_FILE")"
+          tar -czf "artifacts/${ARTIFACT_NAME}.tar.gz" -C "${LIB_DIR}" "${INNER_NAME}"
           ls -lh artifacts/
 
       - uses: actions/upload-artifact@v4
