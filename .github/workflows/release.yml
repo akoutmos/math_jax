@@ -104,9 +104,18 @@ jobs:
           TARGET="${{ matrix.job.target }}"
           ARTIFACT_NAME="math_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}"
 
-          LIB_FILE=$(find native/math_jax_nif/target/release -maxdepth 1 -name "${{ matrix.job.lib_name }}" -type f | head -1)
-          echo "Found: $LIB_FILE"
+          echo "Searching for built library..."
+          find native/math_jax_nif/target -maxdepth 3 \( -name "*.so" -o -name "*.dylib" -o -name "*.dll" \) -type f 2>/dev/null
 
+          LIB_FILE=$(find native/math_jax_nif/target -maxdepth 3 \( -name "*.so" -o -name "*.dylib" -o -name "*.dll" \) -type f | head -1)
+
+          if [ -z "$LIB_FILE" ]; then
+            echo "ERROR: No shared library found"
+            find native/math_jax_nif/target/release -type f | head -20
+            exit 1
+          fi
+
+          echo "Found: $LIB_FILE"
           mkdir -p artifacts
           tar -czf "artifacts/${ARTIFACT_NAME}.tar.gz" -C "$(dirname "$LIB_FILE")" "$(basename "$LIB_FILE")"
           ls -lh artifacts/
