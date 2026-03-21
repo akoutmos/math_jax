@@ -122,11 +122,12 @@ jobs:
             LIB_FILE=$(find native/math_jax_nif/target -maxdepth 3 -name "*.dll" -type f | head -1)
             INNER_NAME="math_jax_nif.dll"
             EXT="dll"
+            PREFIX=""
           else
-            # macOS: cargo produces .dylib but rustler expects .so
             LIB_FILE=$(find native/math_jax_nif/target -maxdepth 3 \( -name "*.dylib" -o -name "*.so" \) -type f | head -1)
             INNER_NAME="libmath_jax_nif.so"
             EXT="so"
+            PREFIX="lib"
           fi
 
           if [ -z "$LIB_FILE" ]; then
@@ -141,7 +142,7 @@ jobs:
             cp "$LIB_FILE" "${LIB_DIR}/${INNER_NAME}"
           fi
 
-          ARTIFACT_NAME="libmath_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}.${EXT}"
+          ARTIFACT_NAME="${PREFIX}math_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}.${EXT}"
 
           mkdir -p artifacts
           tar -czf "artifacts/${ARTIFACT_NAME}.tar.gz" -C "${LIB_DIR}" "${INNER_NAME}"
