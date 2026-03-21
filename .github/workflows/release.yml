@@ -84,26 +84,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Extract project version
-        shell: bash
+      - name: Install Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27"
+          elixir-version: "1.17"
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
         run: |
-          echo "PROJECT_VERSION=$(cat VERSION)" >> $GITHUB_ENV
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get
 
       - name: Build NIF
-        id: build-crate
-        uses: philss/rustler-precompiled-action@v1.1.4
-        with:
-          project-name: math_jax_nif
-          project-version: ${{ env.PROJECT_VERSION }}
-          project-dir: native/math_jax_nif
-          target: ${{ matrix.job.target }}
-          nif-version: ${{ matrix.nif }}
+        env:
+          RUSTLER_NIF_VERSION: ${{ matrix.nif }}
+        run: |
+          mix rustler_precompiled.build MathJax.Native --target ${{ matrix.job.target }} --nif-version ${{ matrix.nif }}
 
-      - name: Artifact upload
-        uses: actions/upload-artifact@v4
+      - name: Find built artifacts
+        shell: bash
+        run: find . -name "*.tar.gz" -type f
+
+      - uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.build-crate.outputs.file-name }}
-          path: ${{ steps.build-crate.outputs.file-path }}
+          name: nif-${{ matrix.job.target }}-nif${{ matrix.nif }}
+          path: "**/*math_jax*.tar.gz"
+          if-no-files-found: error
 
   publish_release:
     name: Publish Release
