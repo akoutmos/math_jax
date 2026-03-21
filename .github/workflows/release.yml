@@ -35,6 +35,11 @@ jobs:
         run: |
           echo "PROJECT_VERSION=$(cat VERSION)" >> $GITHUB_ENV
 
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.job.target }}
+
       - name: Download PIC V8 archive
         run: |
           mkdir -p v8-prebuilt
@@ -108,6 +113,8 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.job.target }}
 
       - name: Build NIF
         working-directory: native/math_jax_nif
