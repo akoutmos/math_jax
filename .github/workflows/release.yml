@@ -28,12 +28,11 @@ jobs:
             v8_archive_url: "https://github.com/akoutmos/math_jax/releases/download/v8-139.0.0/librusty_v8_release_aarch64-unknown-linux-gnu.a"
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Extract project version
         shell: bash
         run: |
-          # Get the project version from mix.exs
           echo "PROJECT_VERSION=$(cat VERSION)" >> $GITHUB_ENV
 
       - name: Download PIC V8 archive
@@ -85,26 +84,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-          target: ${{ matrix.job.target }}
+      - name: Extract project version
+        shell: bash
+        run: |
+          echo "PROJECT_VERSION=$(cat VERSION)" >> $GITHUB_ENV
 
       - name: Build NIF
-        uses: philss/rustler-precompiled-action@v1.0.1
+        id: build-crate
+        uses: philss/rustler-precompiled-action@v1.1.4
         with:
           project-name: math_jax_nif
+          project-version: ${{ env.PROJECT_VERSION }}
           project-dir: native/math_jax_nif
           target: ${{ matrix.job.target }}
           nif-version: ${{ matrix.nif }}
-          project-version: ${{ github.ref_name }}
 
-      - uses: actions/upload-artifact@v4
+      - name: Artifact upload
+        uses: actions/upload-artifact@v4
         with:
-          name: nif-${{ matrix.job.target }}-nif${{ matrix.nif }}
-          path: _build/prod/lib/math_jax/priv/native/*
-          if-no-files-found: error
+          name: ${{ steps.build-crate.outputs.file-name }}
+          path: ${{ steps.build-crate.outputs.file-path }}
 
   publish_release:
     name: Publish Release
