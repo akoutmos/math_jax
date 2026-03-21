@@ -62,7 +62,9 @@ jobs:
 
           # Rename to what rustler_precompiled expects
           LIB_DIR=$(dirname "$LIB_FILE")
-          cp "$LIB_FILE" "${LIB_DIR}/libmath_jax_nif.so"
+          if [ ! -f "${LIB_DIR}/libmath_jax_nif.so" ]; then
+            cp "$LIB_FILE" "${LIB_DIR}/libmath_jax_nif.so"
+          fi
 
           ARTIFACT_NAME="libmath_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}.so"
 
@@ -135,7 +137,9 @@ jobs:
 
           echo "Found: $LIB_FILE"
           LIB_DIR=$(dirname "$LIB_FILE")
-          cp "$LIB_FILE" "${LIB_DIR}/${INNER_NAME}"
+          if [ ! -f "${LIB_DIR}/${INNER_NAME}" ]; then
+            cp "$LIB_FILE" "${LIB_DIR}/${INNER_NAME}"
+          fi
 
           ARTIFACT_NAME="libmath_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}.${EXT}"
 
