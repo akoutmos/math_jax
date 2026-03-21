@@ -48,31 +48,35 @@ jobs:
 
       - name: Build NIF
         working-directory: native/math_jax_nif
-        run: cargo build --release --features nif_version_${{ matrix.nif.feature }}
+        run: cargo build --release --target ${{ matrix.job.target }} --features nif_version_${{ matrix.nif.feature }}
         env:
           RUSTY_V8_ARCHIVE: ${{ github.workspace }}/v8-prebuilt/librusty_v8.a
 
       - name: Package artifact
         run: |
           TARGET="${{ matrix.job.target }}"
-          LIB_FILE=$(find native/math_jax_nif/target -maxdepth 3 -name "*.so" -type f | head -1)
 
-          if [ -z "$LIB_FILE" ]; then
-            echo "ERROR: No shared library found"
-            find native/math_jax_nif/target/release -type f | head -20
+          echo "=== Files matching math_jax_nif ==="
+          ls -lh "native/math_jax_nif/target/${TARGET}/release/"*math_jax_nif* 2>/dev/null || true
+
+          LIB_FILE="native/math_jax_nif/target/${TARGET}/release/libmath_jax_nif.so"
+
+          if [ ! -f "$LIB_FILE" ]; then
+            echo "ERROR: NIF not found at $LIB_FILE"
+            find native/math_jax_nif/target -name "*math_jax*" -type f 2>/dev/null
             exit 1
           fi
 
           echo "Found: $LIB_FILE"
+          echo "Size: $(ls -lh "$LIB_FILE" | awk '{print $5}')"
+          file "$LIB_FILE"
+
           INNER_NAME="libmath_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}.so"
 
-          LIB_DIR=$(dirname "$LIB_FILE")
-          if [ ! -f "${LIB_DIR}/${INNER_NAME}" ]; then
-            cp "$LIB_FILE" "${LIB_DIR}/${INNER_NAME}"
-          fi
-
           mkdir -p artifacts
-          tar -czf "artifacts/${INNER_NAME}.tar.gz" -C "${LIB_DIR}" "${INNER_NAME}"
+          cp "$LIB_FILE" "artifacts/${INNER_NAME}"
+          tar -czf "artifacts/${INNER_NAME}.tar.gz" -C artifacts "${INNER_NAME}"
+          rm "artifacts/${INNER_NAME}"
           ls -lh artifacts/
 
       - uses: actions/upload-artifact@v4
@@ -116,42 +120,44 @@ jobs:
 
       - name: Build NIF
         working-directory: native/math_jax_nif
-        run: cargo build --release --features nif_version_${{ matrix.nif.feature }}
+        run: cargo build --release --target ${{ matrix.job.target }} --features nif_version_${{ matrix.nif.feature }}
 
       - name: Package artifact
         shell: bash
         run: |
           TARGET="${{ matrix.job.target }}"
 
+          echo "=== Files matching math_jax_nif ==="
+          ls -lh "native/math_jax_nif/target/${TARGET}/release/"*math_jax_nif* 2>/dev/null || true
+
           if [[ "$TARGET" == *"windows"* ]]; then
-            LIB_FILE="native/math_jax_nif/target/release/math_jax_nif.dll"
+            LIB_FILE="native/math_jax_nif/target/${TARGET}/release/math_jax_nif.dll"
             EXT="dll"
             PREFIX=""
+          elif [[ "$TARGET" == *"apple"* ]]; then
+            LIB_FILE="native/math_jax_nif/target/${TARGET}/release/libmath_jax_nif.dylib"
+            EXT="so"
+            PREFIX="lib"
           else
-            # Check for .dylib first (macOS), fall back to .so (Linux)
-            LIB_FILE="native/math_jax_nif/target/release/libmath_jax_nif.dylib"
-            if [ ! -f "$LIB_FILE" ]; then
-              LIB_FILE="native/math_jax_nif/target/release/libmath_jax_nif.so"
-            fi
+            LIB_FILE="native/math_jax_nif/target/${TARGET}/release/libmath_jax_nif.so"
             EXT="so"
             PREFIX="lib"
           fi
 
           if [ ! -f "$LIB_FILE" ]; then
-            echo "ERROR: NIF not found at expected path"
-            ls -la native/math_jax_nif/target/release/libmath_jax_nif* 2>/dev/null || true
-            ls -la native/math_jax_nif/target/release/math_jax_nif* 2>/dev/null || true
+            echo "ERROR: NIF not found at $LIB_FILE"
+            find native/math_jax_nif/target -name "*math_jax*" -type f 2>/dev/null
             exit 1
           fi
 
           echo "Found: $LIB_FILE"
+          echo "Size: $(ls -lh "$LIB_FILE" | awk '{print $5}')"
+          file "$LIB_FILE"
+
           INNER_NAME="${PREFIX}math_jax_nif-v${PROJECT_VERSION}-nif-${{ matrix.nif.version }}-${TARGET}.${EXT}"
+
           mkdir -p artifacts
-
-          if [ ! -f "${LIB_DIR}/${INNER_NAME}" ]; then
-            cp "$LIB_FILE" "artifacts/${INNER_NAME}"
-          fi
-
+          cp "$LIB_FILE" "artifacts/${INNER_NAME}"
           tar -czf "artifacts/${INNER_NAME}.tar.gz" -C artifacts "${INNER_NAME}"
           rm "artifacts/${INNER_NAME}"
           ls -lh artifacts/
