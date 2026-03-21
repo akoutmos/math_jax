@@ -16,16 +16,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        nif: ["2.16", "2.15"]
+        nif:
+          - { version: "2.15", feature: "2_15" }
+          - { version: "2.16", feature: "2_16" }
         job:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             v8_archive_url: "https://github.com/akoutmos/math_jax/releases/download/v8-139.0.0/librusty_v8_release_x86_64-unknown-linux-gnu.a"
-            use_cross: false
           - os: ubuntu-22.04
             target: aarch64-unknown-linux-gnu
             v8_archive_url: "https://github.com/akoutmos/math_jax/releases/download/v8-139.0.0/librusty_v8_release_aarch64-unknown-linux-gnu.a"
-            use_cross: true
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -47,15 +47,8 @@ jobs:
           ls -lh v8-prebuilt/
 
       - name: Build NIF
-        id: build-crate
-        uses: philss/rustler-precompiled-action@v1.1.4
-        with:
-          project-name: math_jax_nif
-          project-version: ${{ env.PROJECT_VERSION }}
-          project-dir: native/math_jax_nif
-          target: ${{ matrix.job.target }}
-          nif-version: ${{ matrix.nif }}
-          use-cross: ${{ matrix.job.use-cross }}
+        working-directory: native/math_jax_nif
+        run: cargo build --release --features nif_version_${{ matrix.nif.feature }}
         env:
           RUSTY_V8_ARCHIVE: ${{ github.workspace }}/v8-prebuilt/librusty_v8.a
 
