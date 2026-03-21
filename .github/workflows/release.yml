@@ -70,7 +70,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        nif: ["2.16", "2.15"]
+        nif:
+          - { version: "2.15", feature: "2_15" }
+          - { version: "2.16", feature: "2_16" }
         job:
           - os: macos-15
             target: x86_64-apple-darwin
@@ -89,13 +91,13 @@ jobs:
 
       - name: Build NIF
         working-directory: native/math_jax_nif
-        run: cargo build --release --features nif_version_${{ matrix.nif }}
+        run: cargo build --release --features nif_version_${{ matrix.nif.feature }}
 
       - name: Package artifact
         shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          NIF_VERSION="${{ matrix.nif }}"
+          NIF_VERSION="${{ matrix.nif.version }}"
           TARGET="${{ matrix.job.target }}"
           ARTIFACT_NAME="math_jax_nif-v${VERSION}-nif-${NIF_VERSION}-${TARGET}"
 
@@ -108,7 +110,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: nif-${{ matrix.job.target }}-nif${{ matrix.nif }}
+          name: nif-${{ matrix.job.target }}-nif${{ matrix.nif.version }}
           path: artifacts/*.tar.gz
           if-no-files-found: error
 
