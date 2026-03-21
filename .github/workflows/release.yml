@@ -93,27 +93,29 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install dependencies
-        run: |
-          mix local.hex --force
-          mix local.rebar --force
-          mix deps.get
-
       - name: Build NIF
-        env:
-          RUSTLER_NIF_VERSION: ${{ matrix.nif }}
-          RUSTLER_FORCE_BUILD: "true"
-        run: |
-          mix rustler_precompiled.build MathJax.Native --target ${{ matrix.job.target }} --nif-version ${{ matrix.nif }}
+        working-directory: native/mathjax_nif
+        run: cargo build --release --features nif_version_${{ matrix.nif }}
 
-      - name: Find built artifacts
+      - name: Package artifact
         shell: bash
-        run: find . -name "*.tar.gz" -type f
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          NIF_VERSION="${{ matrix.nif }}"
+          TARGET="${{ matrix.job.target }}"
+          ARTIFACT_NAME="mathjax_nif-v${VERSION}-nif-${NIF_VERSION}-${TARGET}"
+
+          LIB_FILE=$(find native/mathjax_nif/target/release -maxdepth 1 -name "${{ matrix.job.lib_name }}" -type f | head -1)
+          echo "Found: $LIB_FILE"
+
+          mkdir -p artifacts
+          tar -czf "artifacts/${ARTIFACT_NAME}.tar.gz" -C "$(dirname "$LIB_FILE")" "$(basename "$LIB_FILE")"
+          ls -lh artifacts/
 
       - uses: actions/upload-artifact@v4
         with:
           name: nif-${{ matrix.job.target }}-nif${{ matrix.nif }}
-          path: "**/*math_jax*.tar.gz"
+          path: artifacts/*.tar.gz
           if-no-files-found: error
 
   publish_release:
