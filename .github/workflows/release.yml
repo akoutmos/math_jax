@@ -49,7 +49,6 @@ jobs:
           project-dir: native/math_jax_nif
           target: ${{ matrix.job.target }}
           nif-version: ${{ matrix.nif }}
-          use-cross: false
         env:
           RUSTY_V8_ARCHIVE: ${{ github.workspace }}/v8-prebuilt/librusty_v8.a
 
@@ -88,7 +87,6 @@ jobs:
           target: ${{ matrix.job.target }}
           nif-version: ${{ matrix.nif }}
           project-version: ${{ github.ref_name }}
-          use-cross: false
 
       - uses: actions/upload-artifact@v4
         with:
