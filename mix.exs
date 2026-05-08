@@ -72,12 +72,25 @@ defmodule MathJax.MixProject do
   end
 
   defp docs do
+    livebooks =
+      __DIR__
+      |> Path.join("livebooks")
+      |> File.ls!()
+      |> Enum.map(fn livebook ->
+        Path.join("livebooks", livebook)
+      end)
+      |> Enum.sort()
+
     [
       main: "readme",
       source_ref: "master",
       logo: "guides/images/logo.png",
       extras: [
-        "README.md"
+        "README.md" | livebooks
+      ],
+      groups_for_extras: [
+        General: ["README.md", "CHANGELOG.md"],
+        Livebooks: Path.wildcard("livebooks/*.livemd")
       ]
     ]
   end
@@ -86,7 +99,7 @@ defmodule MathJax.MixProject do
     [
       name: "math_jax",
       files:
-        ~w(lib mix.exs README.md LICENSE CHANGELOG.md native/math_jax_nif/.cargo native/math_jax_nif/src native/math_jax_nif/Cargo.* VERSION checksum-*.exs),
+        ~w(lib livebooks mix.exs README.md LICENSE CHANGELOG.md native/math_jax_nif/.cargo native/math_jax_nif/src native/math_jax_nif/Cargo.* VERSION checksum-*.exs),
       licenses: ["MIT"],
       maintainers: ["Alex Koutmos"],
       links: %{
