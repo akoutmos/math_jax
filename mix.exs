@@ -99,7 +99,7 @@ defmodule MathJax.MixProject do
     [
       name: "math_jax",
       files:
-        ~w(lib livebooks mix.exs README.md LICENSE CHANGELOG.md native/math_jax_nif/.cargo native/math_jax_nif/src native/math_jax_nif/Cargo.* VERSION checksum-*.exs),
+        ~w(lib livebooks mix.exs README.md LICENSE CHANGELOG.md guides native/math_jax_nif/.cargo native/math_jax_nif/src native/math_jax_nif/Cargo.* VERSION checksum-*.exs),
       licenses: ["MIT"],
       maintainers: ["Alex Koutmos"],
       links: %{
